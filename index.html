@@ -74,6 +74,13 @@
   }
   .badge.draft { background: var(--draft-bg); color: var(--draft-ink); }
   .badge.final { background: var(--final-bg); color: var(--final-ink); }
+  h3.year {
+    margin: 36px 0 12px;
+    color: var(--muted);
+    font-size: 15px;
+    letter-spacing: .08em;
+  }
+  h3.year:first-child { margin-top: 0; }
   footer { margin-top: 40px; color: var(--muted); font-size: 14px; }
 </style>
 </head>
@@ -84,21 +91,23 @@
     <p>Zhi Li · Flood Lab · CEAE &amp; INSTAAR · University of Colorado Boulder</p>
   </header>
 
-  <ul id="talks"></ul>
+  <div id="talks"></div>
 
   <noscript><p>Turn on JavaScript to see the list, or open a talk folder directly.</p></noscript>
   <footer>Decks open in the browser. Press <b>f</b> for fullscreen, <b>o</b> for the slide overview.</footer>
 </main>
 
 <script>
-  // One entry per talk, newest first. `path` is the talk's folder.
-  // Set status to 'final' once a talk is done; anything else shows as Draft.
+  // One entry per talk, newest first; the list is grouped by `year`.
+  // `path` is the talk's folder. Set status to 'final' once a talk is done;
+  // anything else shows as Draft.
   const TALKS = [
     {
       path: 'flood-ed/',
       title: 'Floods and Emergency Department Visits in California, 2014–2023',
       subtitle: 'Interim results',
       meta: 'Flood Lab · CU Boulder · October 2026',
+      year: 2026,
       status: 'draft',
     },
     {
@@ -106,12 +115,120 @@
       title: 'When AI Meets Flood Simulation',
       subtitle: 'Opportunities and Challenges',
       meta: 'Invited talk · AIH 2026',
+      year: 2026,
       status: 'draft',
+    },
+    {
+      path: 'hydro90-ai-flood/',
+      title: 'When AI Meets Flood Simulation',
+      subtitle: 'Opportunities and Challenges',
+      meta: 'Hydro90 · 2026',
+      year: 2026,
+      status: 'final',
+    },
+    {
+      path: 'csdms-agentic-ai/',
+      title: 'Agentic AI Framework in Hydrology',
+      meta: 'CSDMS · 2026',
+      year: 2026,
+      status: 'final',
+    },
+    {
+      path: 'ou-hydros-rethinking-flood/',
+      title: 'Rethinking Flood Research',
+      subtitle: 'From Living Systems to Foundation Models',
+      meta: 'University of Oklahoma, HyDROS Lab · February 2026',
+      year: 2026,
+      status: 'final',
+    },
+    {
+      path: 'csu2026-rethinking-flood/',
+      title: 'Rethinking Flood Research',
+      subtitle: 'From Living Systems to Foundation Models',
+      meta: 'Colorado State University · 2026',
+      year: 2026,
+      status: 'final',
+    },
+    {
+      path: 'cven5333-kerr-county/',
+      title: 'Why We Failed to Predict the 2025 Central Texas Floods in Kerr County',
+      meta: 'CU Boulder, CVEN 5333 · November 20, 2025',
+      year: 2025,
+      status: 'final',
+    },
+    {
+      path: 'brown2025-kerr-county/',
+      title: 'Why We Failed to Predict the 2025 Central Texas Floods in Kerr County',
+      meta: 'Brown University · November 4, 2025',
+      year: 2025,
+      status: 'final',
+    },
+    {
+      path: 'dl-in-water-aquah/',
+      title: 'AQUAH',
+      subtitle: 'Automatic Quantification and Unified Agent in Hydrology',
+      meta: 'DL in Water · 2025',
+      year: 2025,
+      status: 'final',
+    },
+    {
+      path: 'brown2025-ai-weather/',
+      title: 'AI Weather Foundation Models',
+      subtitle: 'A Comprehensive Roadmap',
+      meta: 'Brown University · 2025',
+      year: 2025,
+      status: 'final',
+    },
+    {
+      path: 'dri2023-floods/',
+      title: 'Confronting the Deluge',
+      subtitle: 'An Interdisciplinary Approach to Characterize Flash Flooding in the Era of Climate Change',
+      meta: 'Desert Research Institute · September 6, 2023',
+      year: 2023,
+      status: 'final',
+    },
+    {
+      path: 'ningbo-zhili/',
+      title: 'Advancing Flood Characterization through Data, Model, and Application',
+      meta: 'Ningbo',
+      year: 2023,
+      status: 'final',
+    },
+    {
+      path: 'ningbo-floods/',
+      title: 'Advancing Flood Characterization through Data, Model, and Application',
+      meta: 'Ningbo · December 2022',
+      year: 2022,
+      status: 'final',
+    },
+    {
+      path: 'ut-beg-floods/',
+      title: 'Advancing Flood Characterization through Data, Model, and Application',
+      meta: 'UT Austin, Bureau of Economic Geology · December 2022',
+      year: 2022,
+      status: 'final',
+    },
+    {
+      path: 'five-floods/',
+      title: 'Five 1-in-1000-Year Floods in One Month',
+      subtitle: 'What are we learning from it?',
+      meta: 'August 31, 2022',
+      year: 2022,
+      status: 'final',
     },
   ]
 
-  const list = document.getElementById('talks')
+  const root = document.getElementById('talks')
+  let list, year
   for (const t of TALKS) {
+    if (t.year !== year) {
+      year = t.year
+      const h = document.createElement('h3')
+      h.className = 'year'
+      h.textContent = year || 'Undated'
+      list = document.createElement('ul')
+      root.append(h, list)
+    }
     const final = t.status === 'final'
     const li = document.createElement('li')
     li.innerHTML = `
