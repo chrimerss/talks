@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Talks · Zhi Li</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23CFB87C'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #1a1a1a;
+    --title: #565a5c;
+    --muted: #6b6f72;
+    --gold: #cfb87c;
+    --gold-ink: #8a6d1f;
+    --line: #e4e4e4;
+    --card: #fafafa;
+    --draft-bg: #fff4d6;
+    --draft-ink: #7a5a00;
+    --final-bg: #e3f1e6;
+    --final-ink: #1f5e2c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141414;
+      --ink: #ececec;
+      --title: #d4d6d8;
+      --muted: #a2a6a9;
+      --gold-ink: #cfb87c;
+      --line: #2c2c2c;
+      --card: #1c1c1c;
+      --draft-bg: #3a3014;
+      --draft-ink: #f0d58a;
+      --final-bg: #183222;
+      --final-ink: #9fd8ab;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.5 Arial, Helvetica, sans-serif;
+  }
+  main { max-width: 860px; margin: 0 auto; padding: 56px 16px 72px; }
+  header { border-bottom: 3px solid var(--gold); padding-bottom: 18px; margin-bottom: 32px; }
+  h1 { margin: 0; color: var(--title); font-size: 34px; }
+  header p { margin: 6px 0 0; color: var(--muted); }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+  a.talk {
+    display: block;
+    padding: 20px 22px;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--gold);
+    border-radius: 6px;
+    background: var(--card);
+    color: inherit;
+    text-decoration: none;
+    transition: border-color .15s, transform .15s;
+  }
+  a.talk:hover, a.talk:focus-visible { border-color: var(--gold); transform: translateY(-1px); }
+  .top { display: flex; gap: 12px; align-items: baseline; justify-content: space-between; }
+  h2 { margin: 0; font-size: 21px; color: var(--title); }
+  .subtitle { margin: 2px 0 0; color: var(--gold-ink); font-weight: bold; }
+  .meta { margin: 8px 0 0; color: var(--muted); font-size: 15px; }
+  .badge {
+    flex: none;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+  }
+  .badge.draft { background: var(--draft-bg); color: var(--draft-ink); }
+  .badge.final { background: var(--final-bg); color: var(--final-ink); }
+  footer { margin-top: 40px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Talks</h1>
+    <p>Zhi Li · Flood Lab · CEAE &amp; INSTAAR · University of Colorado Boulder</p>
+  </header>
+
+  <ul id="talks"></ul>
+
+  <noscript><p>Turn on JavaScript to see the list, or open a talk folder directly.</p></noscript>
+  <footer>Decks open in the browser. Press <b>f</b> for fullscreen, <b>o</b> for the slide overview.</footer>
+</main>
+
+<script>
+  // One entry per talk, newest first. `path` is the talk's folder.
+  // Set status to 'final' once a talk is done; anything else shows as Draft.
+  const TALKS = [
+    {
+      path: 'flood-ed/',
+      title: 'Floods and Emergency Department Visits in California, 2014–2023',
+      subtitle: 'Interim results',
+      meta: 'Flood Lab · CU Boulder · October 2026',
+      status: 'draft',
+    },
+    {
+      path: 'aih2026/',
+      title: 'When AI Meets Flood Simulation',
+      subtitle: 'Opportunities and Challenges',
+      meta: 'Invited talk · AIH 2026',
+      status: 'draft',
+    },
+  ]
+
+  const list = document.getElementById('talks')
+  for (const t of TALKS) {
+    const final = t.status === 'final'
+    const li = document.createElement('li')
+    li.innerHTML = `
+      <a class="talk" href="${t.path}">
+        <div class="top">
+          <h2></h2>
+          <span class="badge ${final ? 'final' : 'draft'}">${final ? 'Final' : 'Draft'}</span>
+        </div>
+        <p class="subtitle"></p>
+        <p class="meta"></p>
+      </a>`
+    li.querySelector('h2').textContent = t.title
+    li.querySelector('.subtitle').textContent = t.subtitle || ''
+    li.querySelector('.meta').textContent = t.meta || ''
+    if (!t.subtitle) li.querySelector('.subtitle').remove()
+    list.appendChild(li)
+  }
+</script>
+</body>
+</html>

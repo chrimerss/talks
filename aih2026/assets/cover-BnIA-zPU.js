@@ -1,0 +1,1 @@
+import{H as e,b as t,z as n}from"./modules/shiki-DTEUdjpd.js";import{nt as r}from"./index-CnVqYUel.js";var i={class:`slidev-layout cu-cover`},a={__name:`cover`,setup(a){let{$slidev:o,$nav:s,$clicksContext:c,$clicks:l,$page:u,$renderContext:d,$frontmatter:f}=r();return(r,a)=>(n(),t(`div`,i,[e(r.$slots,`default`)]))}};export{a as t};
