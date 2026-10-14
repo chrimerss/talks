@@ -13,24 +13,42 @@
     --muted: #6b6f72;
     --gold: #cfb87c;
     --gold-ink: #8a6d1f;
-    --line: #e4e4e4;
-    --card: #fafafa;
-    --draft-bg: #fff4d6;
-    --draft-ink: #7a5a00;
+    --line: #e2e2e2;
+    --card: #ffffff;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 4px 14px rgba(0, 0, 0, .06);
+    --water: #7fb3e0;
+    --water-hi: #b9d8f2;
+    --bank: #eadfc4;
+    --jetty: #a08b6a;
+    --gauge-plate: #123f63;
+    --watch: #f2a516;
+    --draft-bg: #fff1d2;
+    --draft-ink: #7a5300;
     --final-bg: #e3f1e6;
     --final-ink: #1f5e2c;
+    /* River geometry. --gut is the gap from the river's centre line to a card,
+       --amp how far each bend swings toward its card. */
+    --river-w: 24px;
+    --gut: 130px;
+    --amp: 78px;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #141414;
       --ink: #ececec;
-      --title: #d4d6d8;
+      --title: #d8dadc;
       --muted: #a2a6a9;
-      --gold-ink: #cfb87c;
-      --line: #2c2c2c;
+      --gold-ink: #d9c38a;
+      --line: #2e2e2e;
       --card: #1c1c1c;
-      --draft-bg: #3a3014;
-      --draft-ink: #f0d58a;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px rgba(0, 0, 0, .35);
+      --water: #2f6a9a;
+      --water-hi: #4f8cc0;
+      --bank: #3d3628;
+      --jetty: #7d6a4c;
+      --gauge-plate: #1d5a8a;
+      --draft-bg: #3a2e12;
+      --draft-ink: #f3cf7e;
       --final-bg: #183222;
       --final-ink: #9fd8ab;
     }
@@ -42,46 +60,219 @@
     color: var(--ink);
     font: 17px/1.5 Arial, Helvetica, sans-serif;
   }
-  main { max-width: 860px; margin: 0 auto; padding: 56px 16px 72px; }
-  header { border-bottom: 3px solid var(--gold); padding-bottom: 18px; margin-bottom: 32px; }
+  main { max-width: 1120px; margin: 0 auto; padding: 56px 16px 72px; }
+  header { text-align: center; margin-bottom: 8px; }
   h1 { margin: 0; color: var(--title); font-size: 34px; }
   header p { margin: 6px 0 0; color: var(--muted); }
-  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 18px;
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .legend li { display: flex; align-items: center; gap: 7px; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+  .dot.final { background: var(--card); border: 4px solid var(--gold); }
+  .dot.draft { background: var(--watch); border: 4px solid #1a1a1a; }
+
+  /* The river is an SVG drawn behind the list, through every bend marker. */
+  .river { position: relative; list-style: none; margin: 0; padding: 24px 0 64px; }
+  .river-svg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: visible;
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 110px), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 110px), transparent);
+  }
+  .river-svg path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .river-svg .bank { stroke: var(--bank); }
+  .river-svg .water { stroke: var(--water); }
+  .river-svg .shallow { stroke: var(--water-hi); opacity: .55; }
+  .river-svg .glint { stroke: #fff; opacity: .22; stroke-dasharray: 8 52; }
+  .river-svg .ripple { stroke: #fff; opacity: .6; stroke-dasharray: 1 23; }
+  @media (prefers-reduced-motion: no-preference) {
+    .river-svg .glint { animation: flow 9s linear infinite; }
+    .river-svg .ripple { animation: flow 6s linear infinite; }
+  }
+  @keyframes flow { to { stroke-dashoffset: -480; } }
+
+  /* Top of the river. */
+  .source { position: relative; display: flex; justify-content: center; margin: 0 0 18px; }
+  .source span {
+    width: 76px;
+    text-align: center;
+    padding: 3px 0;
+    border-radius: 999px;
+    background: var(--gold);
+    color: #1a1a1a;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  /* A year is a staff gauge standing in the river, its plate reading the year. */
+  .gauge { position: relative; height: 96px; margin: 4px 0 26px; }
+  .staff {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 18px;
+    height: 96px;
+    transform: translateX(-50%);
+    border: 2px solid #111;
+    border-radius: 2px;
+    background:
+      repeating-linear-gradient(to bottom, #111 0 2px, transparent 2px 8px) left / 55% 100% no-repeat,
+      repeating-linear-gradient(to bottom, #111 0 3px, transparent 3px 40px) left / 100% 100% no-repeat,
+      #fff;
+    z-index: 2;
+  }
+  .plate {
+    position: absolute;
+    top: 26px;
+    left: calc(50% + 14px);
+    margin: 0;
+    padding: 3px 12px 4px 16px;
+    border: 2px solid #fff;
+    border-radius: 0 8px 8px 0;
+    outline: 2px solid var(--gauge-plate);
+    background: var(--gauge-plate);
+    color: #fff;
+    font-size: 22px;
+    line-height: 1.2;
+    font-weight: bold;
+    letter-spacing: .04em;
+    box-shadow: var(--shadow);
+    z-index: 2;
+  }
+
+  /* A talk: a card on the bank, a jetty out to the river, and a marker where the river bends to meet it. */
+  .stop { position: relative; width: 50%; margin: 0 0 22px; padding-right: var(--gut); }
+  .stop.right { margin-left: 50%; padding-right: 0; padding-left: var(--gut); }
+  @media (min-width: 761px) { .stop + .stop { margin-top: -52px; } }
+  .node {
+    position: absolute;
+    top: 22px;
+    right: calc(var(--amp) - 9px);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 4px solid var(--gold);
+    z-index: 3;
+  }
+  .stop.right .node { right: auto; left: calc(var(--amp) - 9px); }
+  .jetty {
+    position: absolute;
+    top: 29px;
+    right: var(--amp);
+    width: calc(var(--gut) - var(--amp));
+    height: 4px;
+    background: repeating-linear-gradient(to right, var(--jetty) 0 7px, transparent 7px 9px);
+    border-radius: 1px;
+    z-index: 2;
+  }
+  .stop.right .jetty { right: auto; left: var(--amp); }
+  .stop.draft .node { background: var(--watch); border-color: #1a1a1a; }
+  .flag {
+    /* Flood watch: a pennant planted at the bend while a talk is still being built. */
+    position: absolute;
+    top: -2px;
+    right: var(--amp);
+    width: 2px;
+    height: 28px;
+    background: #1a1a1a;
+    z-index: 3;
+  }
+  .flag::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 2px;
+    border-left: 16px solid var(--watch);
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+  }
+  .stop.right .flag { right: auto; left: var(--amp); }
+
   a.talk {
+    position: relative;
     display: block;
-    padding: 20px 22px;
+    padding: 16px 20px 18px;
     border: 1px solid var(--line);
-    border-left: 4px solid var(--gold);
-    border-radius: 6px;
+    border-radius: 8px;
     background: var(--card);
     color: inherit;
     text-decoration: none;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    z-index: 1;
     transition: border-color .15s, transform .15s;
   }
-  a.talk:hover, a.talk:focus-visible { border-color: var(--gold); transform: translateY(-1px); }
-  .top { display: flex; gap: 12px; align-items: baseline; justify-content: space-between; }
-  h2 { margin: 0; font-size: 21px; color: var(--title); }
-  .subtitle { margin: 2px 0 0; color: var(--gold-ink); font-weight: bold; }
-  .meta { margin: 8px 0 0; color: var(--muted); font-size: 15px; }
+  a.talk:hover { border-color: var(--gold); transform: translateY(-2px); }
+  a.talk:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+  .stop.draft a.talk { border-top: 5px solid var(--watch); }
+  .top { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .date {
+    color: var(--gold-ink);
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  h3 { margin: 0; font-size: 19px; line-height: 1.3; color: var(--title); }
+  .subtitle { margin: 4px 0 0; color: var(--gold-ink); font-weight: bold; font-size: 15px; }
+  .venue { margin: 8px 0 0; color: var(--muted); font-size: 15px; }
   .badge {
     flex: none;
-    font-size: 12px;
+    margin-left: auto;
+    font-size: 11px;
     font-weight: bold;
-    letter-spacing: .06em;
+    letter-spacing: .08em;
     text-transform: uppercase;
     padding: 3px 9px;
     border-radius: 999px;
   }
   .badge.draft { background: var(--draft-bg); color: var(--draft-ink); }
   .badge.final { background: var(--final-bg); color: var(--final-ink); }
-  h3.year {
-    margin: 36px 0 12px;
-    color: var(--muted);
-    font-size: 15px;
-    letter-spacing: .08em;
+  footer { margin-top: 28px; color: var(--muted); font-size: 14px; text-align: center; }
+
+  /* Cards drift in from the bank as they come into view. */
+  .anim .stop a.talk { opacity: 0; transform: translateX(-18px); transition: opacity .5s ease, transform .5s ease, border-color .15s; }
+  .anim .stop.right a.talk { transform: translateX(18px); }
+  .anim .stop.in a.talk { opacity: 1; transform: none; }
+  .anim .stop.in a.talk:hover { transform: translateY(-2px); }
+
+  /* Narrow screens: the river runs down the left edge, every card on its right bank. */
+  @media (max-width: 760px) {
+    :root { --river-w: 16px; --river-x: 30px; --bend: 9px; --card-x: 66px; }
+    main { padding-top: 40px; }
+    h1 { font-size: 30px; }
+    .source { justify-content: flex-start; }
+    .source span { margin-left: calc(var(--river-x) - 38px); }
+    .staff { left: var(--river-x); }
+    .plate { left: calc(var(--river-x) + 14px); font-size: 19px; }
+    .stop, .stop.right { width: auto; margin-left: 0; padding-right: 0; padding-left: var(--card-x); }
+    .stop .node, .stop.right .node { right: auto; left: calc(var(--river-x) - var(--bend) - 9px); }
+    .stop.right .node { left: calc(var(--river-x) + var(--bend) - 9px); }
+    .stop .jetty, .stop.right .jetty { right: auto; left: calc(var(--river-x) - var(--bend)); width: calc(var(--card-x) - var(--river-x) + var(--bend)); }
+    .stop.right .jetty { left: calc(var(--river-x) + var(--bend)); width: calc(var(--card-x) - var(--river-x) - var(--bend)); }
+    .stop .flag, .stop.right .flag { right: auto; left: calc(var(--river-x) - var(--bend)); }
+    .stop.right .flag { left: calc(var(--river-x) + var(--bend)); }
+    .anim .stop a.talk, .anim .stop.right a.talk { transform: translateX(14px); }
+    .anim .stop.in a.talk { transform: none; }
   }
-  h3.year:first-child { margin-top: 0; }
-  footer { margin-top: 40px; color: var(--muted); font-size: 14px; }
+  @media (prefers-reduced-motion: reduce) {
+    .anim .stop a.talk, .anim .stop.right a.talk { opacity: 1; transform: none; transition: none; }
+    a.talk:hover { transform: none; }
+  }
 </style>
 </head>
 <body>
@@ -89,24 +280,30 @@
   <header>
     <h1>Talks</h1>
     <p>Zhi Li · Flood Lab · CEAE &amp; INSTAAR · University of Colorado Boulder</p>
+    <ul class="legend" aria-label="Legend">
+      <li><span class="dot final"></span>Final</li>
+      <li><span class="dot draft"></span>Flood watch: draft, still being built</li>
+    </ul>
   </header>
 
-  <div id="talks"></div>
+  <ol class="river" id="talks"></ol>
 
   <noscript><p>Turn on JavaScript to see the list, or open a talk folder directly.</p></noscript>
   <footer>Decks open in the browser. Press <b>f</b> for fullscreen, <b>o</b> for the slide overview.</footer>
 </main>
 
 <script>
-  // One entry per talk, newest first; the list is grouped by `year`.
-  // `path` is the talk's folder. Set status to 'final' once a talk is done;
-  // anything else shows as Draft.
+  // One entry per talk, newest first; a gauge for the year goes up wherever
+  // `year` changes. `path` is the talk's folder. `date` is optional and only
+  // needed when it says more than the year. Set status to 'final' once a talk
+  // is done; anything else shows as a draft.
   const TALKS = [
     {
       path: 'flood-ed/',
       title: 'Floods and Emergency Department Visits in California, 2014–2023',
       subtitle: 'Interim results',
-      meta: 'Flood Lab · CU Boulder · October 2026',
+      venue: 'Flood Lab · CU Boulder',
+      date: 'October 2026',
       year: 2026,
       status: 'draft',
     },
@@ -114,7 +311,7 @@
       path: 'aih2026/',
       title: 'When AI Meets Flood Simulation',
       subtitle: 'Opportunities and Challenges',
-      meta: 'Invited talk · AIH 2026',
+      venue: 'Invited talk · AIH 2026',
       year: 2026,
       status: 'draft',
     },
@@ -122,14 +319,14 @@
       path: 'hydro90-ai-flood/',
       title: 'When AI Meets Flood Simulation',
       subtitle: 'Opportunities and Challenges',
-      meta: 'Hydro90 · 2026',
+      venue: 'Hydro90',
       year: 2026,
       status: 'final',
     },
     {
       path: 'csdms-agentic-ai/',
       title: 'Agentic AI Framework in Hydrology',
-      meta: 'CSDMS · 2026',
+      venue: 'CSDMS',
       year: 2026,
       status: 'final',
     },
@@ -137,7 +334,8 @@
       path: 'ou-hydros-rethinking-flood/',
       title: 'Rethinking Flood Research',
       subtitle: 'From Living Systems to Foundation Models',
-      meta: 'University of Oklahoma, HyDROS Lab · February 2026',
+      venue: 'University of Oklahoma, HyDROS Lab',
+      date: 'February 2026',
       year: 2026,
       status: 'final',
     },
@@ -145,21 +343,23 @@
       path: 'csu2026-rethinking-flood/',
       title: 'Rethinking Flood Research',
       subtitle: 'From Living Systems to Foundation Models',
-      meta: 'Colorado State University · 2026',
+      venue: 'Colorado State University',
       year: 2026,
       status: 'final',
     },
     {
       path: 'cven5333-kerr-county/',
       title: 'Why We Failed to Predict the 2025 Central Texas Floods in Kerr County',
-      meta: 'CU Boulder, CVEN 5333 · November 20, 2025',
+      venue: 'CU Boulder, CVEN 5333',
+      date: 'November 20, 2025',
       year: 2025,
       status: 'final',
     },
     {
       path: 'brown2025-kerr-county/',
       title: 'Why We Failed to Predict the 2025 Central Texas Floods in Kerr County',
-      meta: 'Brown University · November 4, 2025',
+      venue: 'Brown University',
+      date: 'November 4, 2025',
       year: 2025,
       status: 'final',
     },
@@ -167,7 +367,7 @@
       path: 'dl-in-water-aquah/',
       title: 'AQUAH',
       subtitle: 'Automatic Quantification and Unified Agent in Hydrology',
-      meta: 'DL in Water · 2025',
+      venue: 'DL in Water',
       year: 2025,
       status: 'final',
     },
@@ -175,7 +375,7 @@
       path: 'brown2025-ai-weather/',
       title: 'AI Weather Foundation Models',
       subtitle: 'A Comprehensive Roadmap',
-      meta: 'Brown University · 2025',
+      venue: 'Brown University',
       year: 2025,
       status: 'final',
     },
@@ -183,28 +383,31 @@
       path: 'dri2023-floods/',
       title: 'Confronting the Deluge',
       subtitle: 'An Interdisciplinary Approach to Characterize Flash Flooding in the Era of Climate Change',
-      meta: 'Desert Research Institute · September 6, 2023',
+      venue: 'Desert Research Institute',
+      date: 'September 6, 2023',
       year: 2023,
       status: 'final',
     },
     {
       path: 'ningbo-zhili/',
       title: 'Advancing Flood Characterization through Data, Model, and Application',
-      meta: 'Ningbo',
+      venue: 'Ningbo',
       year: 2023,
       status: 'final',
     },
     {
       path: 'ningbo-floods/',
       title: 'Advancing Flood Characterization through Data, Model, and Application',
-      meta: 'Ningbo · December 2022',
+      venue: 'Ningbo',
+      date: 'December 2022',
       year: 2022,
       status: 'final',
     },
     {
       path: 'ut-beg-floods/',
       title: 'Advancing Flood Characterization through Data, Model, and Application',
-      meta: 'UT Austin, Bureau of Economic Geology · December 2022',
+      venue: 'UT Austin, Bureau of Economic Geology',
+      date: 'December 2022',
       year: 2022,
       status: 'final',
     },
@@ -212,39 +415,97 @@
       path: 'five-floods/',
       title: 'Five 1-in-1000-Year Floods in One Month',
       subtitle: 'What are we learning from it?',
-      meta: 'August 31, 2022',
+      date: 'August 31, 2022',
       year: 2022,
       status: 'final',
     },
   ]
 
-  const root = document.getElementById('talks')
-  let list, year
+  const river = document.getElementById('talks')
+  const el = (tag, cls, text) => {
+    const e = document.createElement(tag)
+    if (cls) e.className = cls
+    if (text) e.textContent = text
+    return e
+  }
+
+  const source = el('li', 'source')
+  source.setAttribute('aria-hidden', 'true')
+  source.appendChild(el('span', '', 'Latest')).dataset.river = ''
+  river.appendChild(source)
+
+  let year, side = 0
   for (const t of TALKS) {
     if (t.year !== year) {
       year = t.year
-      const h = document.createElement('h3')
-      h.className = 'year'
-      h.textContent = year || 'Undated'
-      list = document.createElement('ul')
-      root.append(h, list)
+      const g = el('li', 'gauge')
+      g.appendChild(el('div', 'staff')).dataset.river = ''
+      g.appendChild(el('h2', 'plate', String(year || 'Undated')))
+      river.appendChild(g)
     }
-    const final = t.status === 'final'
-    const li = document.createElement('li')
-    li.innerHTML = `
-      <a class="talk" href="${t.path}">
-        <div class="top">
-          <h2></h2>
-          <span class="badge ${final ? 'final' : 'draft'}">${final ? 'Final' : 'Draft'}</span>
-        </div>
-        <p class="subtitle"></p>
-        <p class="meta"></p>
-      </a>`
-    li.querySelector('h2').textContent = t.title
-    li.querySelector('.subtitle').textContent = t.subtitle || ''
-    li.querySelector('.meta').textContent = t.meta || ''
-    if (!t.subtitle) li.querySelector('.subtitle').remove()
-    list.appendChild(li)
+    const draft = t.status !== 'final'
+    const li = el('li', `stop ${side++ % 2 ? 'right' : 'left'}${draft ? ' draft' : ''}`)
+    li.appendChild(el('span', 'jetty'))
+    li.appendChild(el('span', 'node')).dataset.river = ''
+    if (draft) li.appendChild(el('span', 'flag'))
+    const a = el('a', 'talk')
+    a.href = t.path
+    const top = el('div', 'top')
+    if (t.date) top.appendChild(el('span', 'date', t.date))
+    top.appendChild(el('span', `badge ${draft ? 'draft' : 'final'}`, draft ? 'Draft' : 'Final'))
+    a.append(top, el('h3', '', t.title))
+    if (t.subtitle) a.appendChild(el('p', 'subtitle', t.subtitle))
+    if (t.venue) a.appendChild(el('p', 'venue', t.venue))
+    li.appendChild(a)
+    river.appendChild(li)
+  }
+
+  // Draw the river through the centre of every marker, top to bottom. Each
+  // stretch leaves and arrives vertically, so alternating markers become meanders.
+  const NS = 'http://www.w3.org/2000/svg'
+  const svg = document.createElementNS(NS, 'svg')
+  svg.classList.add('river-svg')
+  svg.setAttribute('aria-hidden', 'true')
+  const layers = ['bank', 'water', 'shallow', 'glint', 'ripple'].map(c => {
+    const p = document.createElementNS(NS, 'path')
+    p.classList.add(c)
+    svg.appendChild(p)
+    return p
+  })
+  river.prepend(svg)
+
+  function drawRiver() {
+    const box = river.getBoundingClientRect()
+    const pts = [...river.querySelectorAll('[data-river]')].map(e => {
+      const r = e.getBoundingClientRect()
+      return [r.left + r.width / 2 - box.left, r.top + r.height / 2 - box.top]
+    }).sort((a, b) => a[1] - b[1])
+    if (!pts.length) return
+    const x0 = pts[0][0]
+    pts.unshift([x0, 0])
+    pts.push([x0, box.height])
+    let d = `M${pts[0][0]},${pts[0][1]}`
+    for (let i = 1; i < pts.length; i++) {
+      const [ax, ay] = pts[i - 1], [bx, by] = pts[i], k = (by - ay) * 0.55
+      d += ` C${ax},${ay + k} ${bx},${by - k} ${bx},${by}`
+    }
+    const w = parseFloat(getComputedStyle(river).getPropertyValue('--river-w')) || 24
+    const widths = [w + 10, w, w * 0.38, w * 0.5, 2]
+    svg.setAttribute('viewBox', `0 0 ${box.width} ${box.height}`)
+    svg.setAttribute('width', box.width)
+    svg.setAttribute('height', box.height)
+    layers.forEach((p, i) => { p.setAttribute('d', d); p.setAttribute('stroke-width', widths[i]) })
+  }
+  drawRiver()
+  new ResizeObserver(drawRiver).observe(river)
+  if (document.fonts) document.fonts.ready.then(drawRiver)
+
+  if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    river.classList.add('anim')
+    const io = new IntersectionObserver(entries => {
+      for (const e of entries) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) }
+    }, { rootMargin: '0px 0px -8% 0px' })
+    river.querySelectorAll('.stop').forEach(s => io.observe(s))
   }
 </script>
 </body>
